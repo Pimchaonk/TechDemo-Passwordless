@@ -1,5 +1,5 @@
 {
-  "name": "Pimchaonk/po-pass1",
+  "name": "pimchaonk/po-pass-one",
   "version": "1.10.0",
   "description": "Passwordless authentication with Amazon Cognito: FIDO2 (WebAuthn, support for Passkeys), Magic Link, SMS OTP Step Up Copy for education",
   "keywords": [
