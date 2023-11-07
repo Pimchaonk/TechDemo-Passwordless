@@ -22,6 +22,9 @@
     "url": "https://github.com/Pimchaonk/po-pass1.git",
     "type": "git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "main": "dist/client/index.js",
   "react-native": "dist/client/react/react-native.js",
   "scripts": {
