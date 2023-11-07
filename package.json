@@ -1,7 +1,7 @@
 {
-  "name": "amazon-cognito-passwordless-auth",
-  "version": "0.10.0",
-  "description": "Passwordless authentication with Amazon Cognito: FIDO2 (WebAuthn, support for Passkeys), Magic Link, SMS OTP Step Up",
+  "name": "BPT study",
+  "version": "1.10.0",
+  "description": "Passwordless authentication with Amazon Cognito: FIDO2 (WebAuthn, support for Passkeys), Magic Link, SMS OTP Step Up Copy for education",
   "keywords": [
     "AWS",
     "Cognito",
@@ -15,11 +15,11 @@
   ],
   "license": "Apache-2.0",
   "author": {
-    "name": "Amazon Web Services",
+    "name": "Amazon Web Services 555",
     "url": "https://aws.amazon.com"
   },
   "repository": {
-    "url": "https://github.com/aws-samples/amazon-cognito-passwordless-auth",
+    "url": "https://github.com/Pimchaonk/po-pass1.git",
     "type": "git"
   },
   "main": "dist/client/index.js",
