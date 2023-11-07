@@ -1,21 +1,19 @@
-name: Node.js Package
+name: "publish npm"
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
 jobs:
   publish-gpr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: node
+        uses: actions/setup-node@v1
         with:
           node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: 'Pimchaonk'
-      - run: npm install
-      - run: npm publish
+          registry-url: https://registry.npmjs.org
+      - name: publsih
+        run: npm install --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
