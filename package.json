@@ -23,7 +23,7 @@
     "type": "git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com@Pimchanok"
   },
   "main": "dist/client/index.js",
   "react-native": "dist/client/react/react-native.js",
