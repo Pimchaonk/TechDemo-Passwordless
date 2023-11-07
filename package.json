@@ -18,8 +18,9 @@
     "name": "Amazon Web Services 555",
     "url": "https://aws.amazon.com"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com@Pimchanok"
+   "repository": {
+    "url": "https://github.com/Pimchaonk/po-pass1.git",
+    "type": "git"
   },
   "main": "dist/client/index.js",
   "react-native": "dist/client/react/react-native.js",
