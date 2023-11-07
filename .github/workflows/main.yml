@@ -12,9 +12,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 18.18.2
-          npm-version : 7
+          npm-version: 7
           registry-url: https://registry.npmjs.org
-      - name: publsih
+      - name: publish
         run: npm install --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
