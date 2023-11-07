@@ -18,10 +18,6 @@
     "name": "Amazon Web Services 555",
     "url": "https://aws.amazon.com"
   },
-  "repository": {
-    "url": "https://github.com/Pimchaonk/po-pass1.git",
-    "type": "git"
-  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com@Pimchanok"
   },
