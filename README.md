@@ -8,7 +8,6 @@ This research paper relates to passwordless authentication that based on **FIDO2
 ## Table of Contents
 
 - [Installation](#installation)
-- [Dependencies](#dependencies)
 - [Features](#features)
 - [References](#references)
 
