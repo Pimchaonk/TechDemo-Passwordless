@@ -1,102 +1,395 @@
-# Amazon Cognito Passwordless Auth
+# BPT Passwordless Authentication
 
-_**AWS Solution to implement Passwordless authenticaton with Amazon Cognito**_
+_**By using Passwordless with Zero Trust concept to enhance Cloud-Native Security**_
 
-Passwordless authentication improves security, reduces friction and provides better user experience for end-users of customer facing applications. Amazon Cognito provides features to implement custom authentication flows, which can be used to expand authentication factors for your application. This solution demonstrates several patterns to support passwordless authentication and provides reference implementations for these methods:
+This research paper relates to passwordless authentication that based on **FIDO2** by examining the transition from traditional password-based security measures to a system where access tokens become the primary credential. By testing on **AWS Cloud Environment** in comparison with three different methods of authentication: password-based, passwordless, and passwordless per session. This work will also focus on securing the token for passwordless authentication which is normally not that secure.
 
-- **FIDO2**: aka **WebAuthn**, i.e. sign in with Face, Touch, YubiKey, etc. This includes support for **Passkeys** (i.e. usernameless authentication). [FIDO2 - architecture and details](./FIDO2.md).
-- **Magic Link Sign In**: sign in with a one-time-use secret link that's emailed to you (and works across browsers). [Magic Links - architecture and details](./MAGIC-LINKS.md).
-- **SMS based Step-Up auth**: let an already signed-in user verify their identity again with a SMS One-Time-Password (OTP) without requiring them to type in their password. [SMS OTP Step up - architecture and details](./SMS-OTP-STEPUP.md).
-
-The reference implementation of each of these auth methods uses several AWS resources. This solution contains both **CDK** code (TypeScript) for the back-end, as well as front-end code (TypeScript) to use in **Web**, **React** and **React Native** to help developers understand the building blocks needed and expand/adjust the solution as necessary.
-
-**IMPORTANT**: This AWS Solution is for demonstration purposes and uses several AWS resources, it is intended for developers with moderate to advanced AWS knowledge. If you plan to use these methods in production, you need to review, adjust and extend the sample code as necessary for your requirements.
-
-Sign in with passkey, without needing to type in your username:
-
-<img src="./drawings/passwordless-signin-passkey.png" alt="Passwordless Sign In" width="500px" />
-
-Sign in with non-discoverable FIDO2 credential, or Magic Link:
-
-<img src="./drawings/passwordless-signin.png" alt="Passwordless Sign In" width="500px" />
-
-## Video Introduction
-
-Here's a short (11m41s) video that explains and demonstrates the solution:
-
-[![Solution Intro on YouTube](https://img.youtube.com/vi/hY54Zy-l6hc/0.jpg)](https://www.youtube.com/watch?v=hY54Zy-l6hc)
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Basic Usage](#basic-usage)
+- [Dependencies](#dependencies)
 - [Features](#features)
-- [Security](#security)
-- [Usage with AWS Amplify](#usage-with-aws-amplify)
-- [Usage in (plain) Web](#usage-in-plain-web)
-- [Usage in React](#usage-in-react)
-- [Usage in React Native](#usage-in-react-native)
-- [Customizing Auth](#customizing-auth)
-- [FAQ - Frequently Asked Questions](#faq---frequently-asked-questions)
-- [License](#license)
+- [References](#references)
+
 
 ## Installation
 
-We've wrapped the sample code in a NPM package for convenient installation and use:
+Firstly, our project will be deploy on **AWS**. So using **Cloud9 IDE** is highly recomended.
 
-```shell
-npm install amazon-cognito-passwordless-auth
+You'll  set up the backend using **AWS CDK** to create a **CloudFormation** stack to deploy an **Amazon Cognito User Pool**, and add Passwordless authentication to it.
+
+Then, you'll create a web application that works against that backend, to demonstrate Passwordless sign-in. Assuming the environment we are setting up is using **Windows**.
+
+- [Environment Setup](#environment-setup)
+- [Deploying back-end API](#deploy-back-end-api)
+- [Deploying front-end](#deploy-front-end)
+- [Deploying the web application](#deploying-the-web-application)
+
+### Environment Setup
+
+These are components required in order to run the **BPT Passwordless Authentication Tech Demo**:
+
+- [Node.js](#nodejs)
+- [AWS CDK](#aws-cdk)
+- [Environment Variables](#environment-variables)
+
+#### Node.js
+
+To install **Node.js** visit the [node.js website](https://nodejs.org/en).
+
+If you have an old version of **Node.js** installed on your system, it may be required to run the ``.msi`` installation as Administrator.
+If you already have **Node.js** installed, verify that you have a compatible version:
+
+```
+node --version
+```
+Output should be >= 20.x:
+
+```
+v20.10.0
+```
+#### AWS CDK
+
+Next, you’ll install the **AWS CDK Toolkit**. The toolkit is a command-line utility which allows you to work with **CDK** apps.
+
+Open a terminal session and run the following command as an Administrator:
+```
+npm install -g aws-cdk --force
+```
+This will install **AWS CDK**, or update it to the latest version if it was already installed:
+
+You can check the toolkit version:
+
+```
+cdk --version
+```
+Output should be something like:
+```
+2.80.0 (build bbdb16a)
 ```
 
-## Getting Started
+#### Environment Variables
 
-Follow the **self-paced workshop** (duration: 60 minutes) to understand how to use this solution to implement sign-in with FIDO2 (WebAuthn) and Magic Links. The workshop will walk you through all the steps to set up and use this solution: [Implement Passwordless authentication with Amazon Cognito and WebAuthn](https://catalog.workshops.aws/cognito-webauthn-passwordless/en-US)
+In this workshop you'll be building a front end, amongst other things. To be able to open the front end in developer mode, you need to know the preview URL.
 
-Alternatively, you can deploy the [end-to-end example](./end-to-end-example/) into your own AWS account. You can run the accompanying front end locally, and sign-in with magic links and FIDO2 (WebAuthn), and try SMS OTP Step Up authentication.
+Execute the following commands in the terminal:
 
-## Basic Usage
+```
+export WS_REGION=$(aws configure get default.region)
+export WS_PREVIEW_HOST="$C9_PID.vfs.cloud9.$WS_REGION.amazonaws.com"
+export WS_PREVIEW_URL="https://${WS_PREVIEW_HOST}"
+```
+Specify an e-mail address for the test user you will create and use in this workshop. Use an e-mail address you have easy access to since we do not have registration system. So we must include the user within database for authentication system manually:
 
-Create a CDK stack, instantiate the `Passwordless` CDK construct, and deploy. This will deploy all necessary AWS components, such as AWS Lambda triggers that implement custom authentication flows.
+```
+export WS_EMAIL=<replace with your email>
+```
+
+Let's double check your environment variables are set properly:
+
+```
+env | grep WS_
+```
+
+That should show environment variables with sensible values: `WS_REGION`, `WS_PREVIEW_HOST`, `WS_PREVIEW_URL`, and `WS_EMAIL`.
+
+### Deploying back-end API
+
+You will create a **CDK** app to deploy the backend with the Passwordless additions to enable **FIDO2** in order to use the **BPT Passwordless Authentication Tech Demo**. 
+
+Start a new **CDK** project, let's use **TypeScript**:
+```
+mkdir -p cdk
+cd cdk
+npx cdk init app --language typescript
+```
+Then, install **BPT Passwordless Authentication Tech Demo**. We've wrapped the code in a **NPM** package for convenient installation and use:
+
+```shell
+npm install bpt-passwordless-pack
+```
+
+Edit the file `lib/cdk-stack.ts` (in the `cdk` folder) as follow:
+Noted that you can  customize `userPool`, `KMS`, `Lambda API`, `Firewall`, etc as the way you want.
 
 ```typescript
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { Passwordless } from "amazon-cognito-passwordless-auth/cdk";
+import { Passwordless } from "bpt-passwordless-pack/cdk";
 
-class SampleTestStack extends cdk.Stack {
-  constructor(scope?: Construct, id?: string, props?: cdk.StackProps) {
+export class CdkStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const passwordless = new Passwordless(this, "Passwordless", {
-      userPool: yourUserPool, // optional, if not provided an Amazon Cognito User Pool will be created for you
-      allowedOrigins: [
-        "http://localhost:5173", // Mention all URLs you're exposing the web app on
-      ],
-      magicLink: {
-        sesFromAddress: "no-reply@auth.example.com", // must be a verified domain or identity in Amazon SES
+    /** Create User Pool */
+    const userPool = new cdk.aws_cognito.UserPool(this, "UserPool", {
+      signInAliases: {
+        username: false,
+        email: true,
       },
-      fido2: {
-        allowedRelyingPartyIds: [
-          "localhost", // Domain names that you wish to use as Relying Party ID
-        ],
-      },
-      smsOtpStepUp: {}, // leave this out to disable SMS OTP Step Up Auth. Likewise for magicLink and fido2
     });
 
+    /** Bucket for Web App assets */
+    const bucket = new cdk.aws_s3.Bucket(this, "Bucket", {
+      enforceSSL: true,
+      blockPublicAccess: cdk.aws_s3.BlockPublicAccess.BLOCK_ALL,
+      autoDeleteObjects: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    /** OAI for secure bucket access by CloudFront */
+    const originAccessIdentity = new cdk.aws_cloudfront.OriginAccessIdentity(
+      this,
+      "OAI"
+    );
+
+    /** CloudFront distribution to serve Web app from S3 bucket */
+    const distribution = new cdk.aws_cloudfront.Distribution(
+      this,
+      "Distribution",
+      {
+        defaultBehavior: {
+          origin: new cdk.aws_cloudfront_origins.S3Origin(bucket, {
+            originAccessIdentity,
+          }),
+          viewerProtocolPolicy:
+            cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          responseHeadersPolicy:
+            cdk.aws_cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
+        },
+        defaultRootObject: "index.html",
+        errorResponses: [{ httpStatus: 403, responsePagePath: "/index.html" }],
+      }
+    );
+
+    /** Add Passwordless authentication to the User Pool */
+    const passwordless = new Passwordless(this, "Passwordless", {
+      userPool,
+      allowedOrigins: [
+        process.env.WS_PREVIEW_URL!,
+        `https://${distribution.distributionDomainName}`,
+      ],
+      fido2: {
+        allowedRelyingPartyIds: [
+          process.env.WS_PREVIEW_HOST!,
+          distribution.distributionDomainName,
+        ],
+      },
+      magicLink: {
+        sesFromAddress: process.env.WS_EMAIL!,
+      },
+    });
+
+    /** Add test user to User Pool */
+    const user = new cdk.aws_cognito.CfnUserPoolUser(this, "TestUser", {
+      userPoolId: passwordless.userPool.userPoolId,
+      username: process.env.WS_EMAIL!,
+      messageAction: "SUPPRESS",
+      userAttributes: [
+        {
+          name: "email",
+          value: process.env.WS_EMAIL!,
+        },
+        {
+          name: "email_verified",
+          value: "true",
+        },
+      ],
+    });
+    user.node.addDependency(userPool.node.findChild("PreSignUpCognito"));
+
+    /** Verify email address of test user */
+    new cdk.aws_ses.EmailIdentity(this, "SesVerification", {
+      identity: cdk.aws_ses.Identity.email(process.env.WS_EMAIL!),
+    });
+
+    /** Let's grab the ClientId that the Passwordless solution created for us */
     new cdk.CfnOutput(this, "ClientId", {
       value: passwordless.userPoolClients!.at(0)!.userPoolClientId,
     });
+
+    /** Let's grab the FIDO2 API base URL. This is the API with which (signed-in) users can manage FIDO2 credentials */
     new cdk.CfnOutput(this, "Fido2Url", {
       value: passwordless.fido2Api!.url!,
+    });
+
+    /** Let's grab the bucket name where we'll need to upload the front end to */
+    new cdk.CfnOutput(this, "BucketName", {
+      value: bucket.bucketName,
+    });
+
+    /** Let's grab the CloudFront distribution URL, we'll need it for accessing the front end */
+    new cdk.CfnOutput(this, "WebAppUrl", {
+      value: `https://${distribution.distributionDomainName}`,
     });
   }
 }
 ```
 
-Then, with your CDK stack deployed, you're ready to wire up the frontend, see below for React, React Native and (plain) Web.
+You should now be ready to deploy, but let's first double check your environment variables are set properly:
 
-## Notable Features
+```shell
+env | grep WS_
+```
+That should show environment variables with sensible values: `WS_REGION`, `WS_PREVIEW_HOST`, `WS_PREVIEW_URL`, and `WS_EMAIL`. Otherwise, follow the instructions to set up the environment variables here: Populate environment variables
+
+Before being able to cdk deploy into a region in an **AWS** account you must bootstrap **CDK**. You only need to do this once for an **AWS** account and region:
+
+```shell
+cdk bootstrap
+```
+
+When bootstrapping is done, you're ready to deploy the **CDK** stack. Let's do it!:
+
+```shell
+cdk deploy --method direct
+```
+
+Noted that the **CDK** deployment may take several minutes. While that's running we recommend you already proceed to the next step. Once you see the deployment is running (you'll see `CREATE_IN_PROGRESS`), you can press `ctrl+c` to stop monitoring the **CDK** deployment: it will continue in the background.
+
+### Deploying front-end
+
+In this section, you'll create **BPT Passwordless Authentication Tech Demo** as a React web application. You'll configure the web application to work with the back end that you deployed in the previous steps.
+
+
+You'll build our front end with React  and you'll use Vite  to bootstrap your project.
+
+1. Bootstrap our React Project with Vite
+Within the cdk directory, enter the following command:
+
+```shell
+cd ..
+npm create vite@latest webapp
+```
+The installer will ask you a few questions, select the following:
+
+- Framework: React
+- Variant: TypeScript + SWC
+
+2. Modify App Configuration File
+Further in the workshop you'll run the web app locally before deploying it for hosting. For better support of **Cloud9** you want the app to run locally over port 8080. To accomplish this, open the `webapp/vite.config.ts` file and replace the entire contents with the following:
+
+```TypeScript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 8080
+  },
+  preview: {
+    port: 8080
+  }
+})
+```
+
+3. Install Dependencies
+Back in the CLI, you're going to move into the `/webapp` directory and install the dependencies with the following:
+
+```shell
+cd webapp
+npm install
+```
+
+The basic sample React web app is ready, but you're going to make some changes first. In the next steps, you're going to add passwordless authentication to the app and configure it to use the back end you deployed earlier.
+
+Then, install **BPT Passwordless Authentication Tech Demo** again in this directory:
+
+```shell
+npm install bpt-passwordless-pack
+```
+
+To check wheather the package is install, you can check by using the following:
+
+```shell
+npm list
+```
+
+4. Import Passwordless Authentication Package
+Import the package installed on the previous section into the react web application we created earlier.
+
+Open the `webapp/src/main.tsx` file and add the below code after the existing imports. This will import the passwordless dependencies you just installed into the web app.
+
+Ensure to keep all existing imports in place.
+
+```TypeScript
+import { Passwordless } from "bpt-passwordless-pack";
+import {
+  PasswordlessContextProvider,
+  Fido2Toast,
+  Passwordless as PasswordlessComponent,
+} from "bpt-passwordless-pack";
+import "bpt-passwordless-pack/passwordless.css";
+```
+
+Open the webapp/src/index.css file and add the below CSS styling at the top of the file and save your changes. Keep all existing styling in place. This will ensure the front end renders correctly in the browser
+
+```TypeScript
+#root .passwordless-main-container {
+  min-height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+```
+
+Next, open the `webapp/src/App.tsx` file and add the passwordless construct and the ability to manage registered authenticators.
+
+Replace the entire contents of the `webapp/src/App.tsx` file with the below code and save the file:
+
+```TypeScript
+import "./App.css";
+import { usePasswordless } from "bpt-passwordless-pack/react";
+
+function App() {
+  const {
+    signOut,
+    showAuthenticatorManager,
+    toggleShowAuthenticatorManager,
+    tokensParsed,
+  } = usePasswordless();
+
+  return (
+    <div className="app">
+      <h1>Passwordless Demo App</h1>
+      <h2>Hello {tokensParsed?.idToken.email}!</h2>
+      <button onClick={signOut}>Sign out</button>
+      <button
+        onClick={() => toggleShowAuthenticatorManager()}
+        disabled={showAuthenticatorManager}
+      >
+        Manage authenticators
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Deploying the web application
+
+In this section you're going to build and deploy the front end React app to the **Amazon S3** bucket you deployed earlier. The front end web app will use a **CloudFront** distribution to serve up the **React** app.
+
+1. Build front end
+From the command line and within the webapp/ directory let's build our app and create a distribution directory by running the following:
+
+```shell
+npm run build
+```
+
+2. Deploy to Amazon S3
+After building our web app, a new `webapp/dist` directory is created and the contents of this directory is what will be uploaded to the **Amazon S3** bucket and ultimately served from the **CloudFront** distribution. Within the `webapp/` directory you're going to upload the front end to the Amazon S3 bucket by running the below command:
+
+```shell
+npx s3-spa-upload dist <REPLACE-WITH-YOUR-S3-BUCKET-NAME>
+```
+
+
+## Features
 
 This library includes:
 
@@ -108,138 +401,13 @@ This library includes:
 Other noteworthy features:
 
 - This library is built from the ground up in **plain TypeScript** and has **very few dependencies** besides `aws-sdk` and `aws-cdk-lib`. Most batteries are included:
-  - The **Magic Link** back-end implementation has no dependencies
   - The **FIDO2** back-end implementation only depends on `cbor`
-  - The **SMS Step-Up Auth** back-end implementation only depends on `aws-jwt-verify`
   - The (plain) **Web client** implementation has no dependencies
   - The **React** Web client implementation only has a peer dependency on `react` itself
-  - The **React Native** client implementation only depends on `react-native-passkey`
-- This library is **fully compatible** with **AWS Amplify** (JS library, `aws-amplify`), however it does **_not_** require AWS Amplify. If you just need Auth, this library should be all you need, but you can use AWS Amplify at the same time for any other features (and even for Auth too, as they can co-operate). See [Usage with AWS Amplify](#usage-with-aws-amplify).
-- The custom authentication implementations are also exported as separate functions, so you can **reuse** the code, **configure** them and **tailor** them in your own Custom Auth Functions. For example, you can use a custom JavaScript function to generate the HTML and Text contents of the e-mail with the Magic Links.
+- The **JWT Token** will use **Memory Storage** for storing the credential instead of traditional storage. This will resulting in more secure and phising-proof token.
 
-## Security
+## References
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+The reference for **BPT Passwordless Authentication Tech Demo** is from the following video:
 
-### Keep Dependencies Up-to-date
-
-This sample solution defines several peer dependencies that you must install yourself (e.g. AWS CDK, React). You must make sure to keep these dependencies updated, to account for any security issues that may be found (and solved) for these dependencies.
-
-### Token (JWT) Storage
-
-By default, `localStorage` is used to store tokens (JWTs). This is similar to how e.g. AmplifyJS does it, and is [subject to the same concerns](https://github.com/aws-amplify/amplify-js/issues/3436). You may want to store tokens elsewhere, perhaps in memory only. You can do so by configuring a custom storage class, e.g.:
-
-```javascript
-import { Passwordless } from "amazon-cognito-passwordless-auth";
-
-class MemoryStorage {
-  constructor() {
-    this.memory = new Map();
-  }
-  getItem(key) {
-    return this.memory.get(key);
-  }
-  setItem(key, value) {
-    this.memory.set(key, value);
-  }
-  removeItem(key) {
-    this.memory.delete(key);
-  }
-}
-
-Passwordless.configure({
-  ..., // other config
-  storage: new MemoryStorage(),
-});
-```
-
-### Other Security Best Practices
-
-This sample solution is secure by default. However, you should consider matching the security posture to your requirements, that might be stricter than the defaults:
-
-- [Enable KMS encryption on DynamoDB tables](https://aws.amazon.com/blogs/database/bring-your-own-encryption-keys-to-amazon-dynamodb/) (default: uses DynamoDB default encryption)
-- [Set CloudWatch log retention](https://docs.aws.amazon.com/managedservices/latest/userguide/log-customize-retention.html) in accordance to your requirements (default: logs never expire)
-
-## Usage with AWS Amplify
-
-This library by default uses the same token storage as Amplify uses by default, and thus is able to co-exist and co-operate with Amplify. That means that you can use this library to manage authentication, and use Amplify for other operations (e.g. Storage, PubSub).
-
-After the user signed-in with this library, Amplify will recognize that sign-in as if it had managed the sign-in itself.
-
-If you're using Amplify and this library together, you can use the following convenience methods to configure this library from Amplify configuration:
-
-```typescript
-import { Passwordless } from "amazon-cognito-passwordless-auth";
-import { Amplify } from "aws-amplify";
-
-// Configure Amplify:
-Amplify.configure({
-  ...
-})
-
-// Next, configure Passwordless from Amplify:
-Passwordless.configureFromAmplify(Amplify.configure());
-
-// Or, to be able able to provide additional Passwordless configuration, do:
-Passwordless.configureFromAmplify(Amplify.configure()).with({
-  fido2: {
-    baseUrl: "...",
-  },
-});
-```
-
-## Usage in (plain) Web
-
-See [README.md](./client/README.md)
-
-## Usage in React
-
-See [README-REACT.md](./client/react/README-REACT.md)
-
-## Usage in React Native
-
-See [README-REACT-NATIVE.md](./client/react/README-REACT-NATIVE.md)
-
-## Usage in JavaScript environments other than Web
-
-See [README.md](./client/README-NON-WEB.md)
-
-## Customizing Auth
-
-If you want to do customization of this solution that goes beyond the parameters of the `Passwordless` construct, e.g. to use your own e-mail content for magic links, see [CUSTOMIZE-AUTH.md](./CUSTOMIZE-AUTH.md)
-
-## FAQ - Frequently Asked Questions
-
-### Who created this library?
-
-The AWS Industries Prototyping team. We created this library initially to use in our own prototypes, that we build for customers. We thought it would benefit many customers, so we decided to spend the effort to open-source it.
-
-Since we use this library ourselves, we'll probably keep it up-to-date and evolve it further. That being said, we consider this **_sample code_**: if you use it, be prepared to own your own fork of it.
-
-### Why is this on `aws-samples`, and not `awslabs`?
-
-Having this repository be on `aws-samples` communicates most clearly that it is sample code. Users may run it as-is, but should be prepared to "own" it themselves.
-
-We are considering to move it to `awslabs` in the future (which is why we released this under `Apache-2.0` license, instead of `MIT-0` which is common on `aws-samples`).
-
-### How have you tested the security posture of this solution?
-
-If you use this solution, YOU must review it and be your own judge of its security posture.
-
-Having said that, you should know that this solution was written by Amazon Cognito experts from AWS. We have run it through multiple internal reviews. We've used it for several of our projects. Amazon's application security team has reviewed and pentested it.
-
-### Can you also support other Infrastructure as Code tools than CDK?
-
-This is currently out of scope, to keep maintenance effort manageable. However we'd like to track such requests: leave us a GitHub issue.
-
-### Can you also support other Client technologies such as VueJS, Angular, Ionic, etc?
-
-This is currently out of scope, to keep maintenance effort manageable. However we'd like to track such requests: leave us a GitHub issue.
-
-### Can you also support other languages than JavaScript / TypeScript?
-
-This is currently out of scope, to keep maintenance effort manageable. However we'd like to track such requests: leave us a GitHub issue.
-
-## License
-
-This project is licensed under the Apache-2.0 License.
+[![Solution Intro on YouTube](https://img.youtube.com/vi/hY54Zy-l6hc/0.jpg)](https://www.youtube.com/watch?v=hY54Zy-l6hc)
