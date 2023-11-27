@@ -22,11 +22,7 @@ export declare function usePasswordless(): {
     signingInStatus: "CHECKING_FOR_SIGNIN_LINK" | "REQUESTING_SIGNIN_LINK" | "SIGNING_IN_WITH_LINK" | "STARTING_SIGN_IN_WITH_FIDO2" | "COMPLETING_SIGN_IN_WITH_FIDO2" | "SIGNING_IN_WITH_PASSWORD" | "SIGNING_IN_WITH_OTP" | "SIGNING_OUT" | "NO_SIGNIN_LINK" | "SIGNIN_LINK_REQUEST_FAILED" | "SIGNIN_LINK_REQUESTED" | "SIGNIN_LINK_EXPIRED" | "INVALID_SIGNIN_LINK" | "SIGNED_OUT" | "SIGNED_IN_WITH_LINK" | "SIGNED_IN_WITH_FIDO2" | "SIGNED_IN_WITH_PASSWORD" | "SIGNED_IN_WITH_OTP" | "FIDO2_SIGNIN_FAILED" | "SIGNIN_WITH_OTP_FAILED" | "PASSWORD_SIGNIN_FAILED";
     /** Are we currently busy signing in or out? */
     busy: boolean;
-    /**
-     * The overall auth status, e.g. is the user signed in or not?
-     * Use this field to show the relevant UI, e.g. render a sign-in page,
-     * if the status equals "NOT_SIGNED_IN"
-     */
+    
     signInStatus: "SIGNING_OUT" | "SIGNED_IN" | "REFRESHING_SIGN_IN" | "SIGNING_IN" | "CHECKING" | "NOT_SIGNED_IN";
     /** Is a user verifying platform authenticator available? E.g. Face ID or Touch */
     userVerifyingPlatformAuthenticatorAvailable: boolean | undefined;
