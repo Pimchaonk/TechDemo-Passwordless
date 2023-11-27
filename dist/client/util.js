@@ -23,12 +23,7 @@ export function parseJwtPayload(jwt) {
     }
     return JSON.parse(new TextDecoder().decode(bufferFromBase64Url(payload)));
 }
-/**
- * Schedule a callback once, like setTimeout, but count
- * time spent sleeping also as time spent. This way, if the browser tab
- * where this is happening is activated again after sleeping,
- * the callback is run immediately (more precise: within 1 second)
- */
+
 export function setTimeoutWallClock(cb, ms) {
     const executeAt = Date.now() + ms;
     const i = setInterval(() => {
