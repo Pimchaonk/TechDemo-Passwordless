@@ -37,20 +37,11 @@ These are components required in order to run the **BPT Passwordless Authenticat
 
 To install **Node.js** visit the [node.js website](https://nodejs.org/en).
 
-If you have an old version of **Node.js** installed on your system, it may be required to run the ``.msi`` installation as Administrator.
-If you already have **Node.js** installed, verify that you have a compatible version:
+If you already have **Node.js** installed, verify that you have a compatible version
 
-```
-node --version
-```
-Output should be >= 20.x:
-
-```
-v20.10.0
-```
 #### AWS CDK
 
-Next, you’ll install the **AWS CDK Toolkit**. The toolkit is a command-line utility which allows you to work with **CDK** apps.
+Next, you’ll install the **AWS CDK Toolkit**. The toolkit is a command-line utility which allows you to work with **CDK**.
 
 Open a terminal session and run the following command as an Administrator:
 ```
@@ -63,14 +54,8 @@ You can check the toolkit version:
 ```
 cdk --version
 ```
-Output should be something like:
-```
-2.80.0 (build bbdb16a)
-```
 
 #### Environment Variables
-
-In this workshop you'll be building a front end, amongst other things. To be able to open the front end in developer mode, you need to know the preview URL.
 
 Execute the following commands in the terminal:
 
@@ -79,13 +64,13 @@ export WS_REGION=$(aws configure get default.region)
 export WS_PREVIEW_HOST="$C9_PID.vfs.cloud9.$WS_REGION.amazonaws.com"
 export WS_PREVIEW_URL="https://${WS_PREVIEW_HOST}"
 ```
-Specify an e-mail address for the test user you will create and use in this workshop. Use an e-mail address you have easy access to since we do not have registration system. So we must include the user within database for authentication system manually:
+Use an e-mail address you have easy access to since we do not have registration system.
 
 ```
 export WS_EMAIL=<replace with your email>
 ```
 
-Let's double check your environment variables are set properly:
+Check environment variables are set properly:
 
 ```
 env | grep WS_
@@ -225,14 +210,6 @@ export class CdkStack extends cdk.Stack {
   }
 }
 ```
-
-You should now be ready to deploy, but let's first double check your environment variables are set properly:
-
-```shell
-env | grep WS_
-```
-That should show environment variables with sensible values: `WS_REGION`, `WS_PREVIEW_HOST`, `WS_PREVIEW_URL`, and `WS_EMAIL`. Otherwise, follow the instructions to set up the environment variables here: Populate environment variables
-
 Before being able to cdk deploy into a region in an **AWS** account you must bootstrap **CDK**. You only need to do this once for an **AWS** account and region:
 
 ```shell
@@ -244,8 +221,6 @@ When bootstrapping is done, you're ready to deploy the **CDK** stack. Let's do i
 ```shell
 cdk deploy --method direct
 ```
-
-Noted that the **CDK** deployment may take several minutes. While that's running we recommend you already proceed to the next step. Once you see the deployment is running (you'll see `CREATE_IN_PROGRESS`), you can press `ctrl+c` to stop monitoring the **CDK** deployment: it will continue in the background.
 
 ### Deploying front-end
 
@@ -261,7 +236,8 @@ Within the cdk directory, enter the following command:
 cd ..
 npm create vite@latest webapp
 ```
-The installer will ask you a few questions, select the following:
+
+Select the following:
 
 - Framework: React
 - Variant: TypeScript + SWC
@@ -293,8 +269,6 @@ cd webapp
 npm install
 ```
 
-The basic sample React web app is ready, but you're going to make some changes first. In the next steps, you're going to add passwordless authentication to the app and configure it to use the back end you deployed earlier.
-
 Then, install **BPT Passwordless Authentication Tech Demo** again in this directory:
 
 ```shell
@@ -324,7 +298,7 @@ import {
 import "bpt-passwordless-pack/passwordless.css";
 ```
 
-Open the webapp/src/index.css file and add the below CSS styling at the top of the file and save your changes. Keep all existing styling in place. This will ensure the front end renders correctly in the browser
+Open the `webapp/src/index.css` file and add the below CSS styling at the top of the file and save your changes. Keep all existing styling in place. This will ensure the front end renders correctly in the browser
 
 ```TypeScript
 #root .passwordless-main-container {
@@ -371,17 +345,17 @@ export default App;
 
 ### Deploying the web application
 
-In this section you're going to build and deploy the front end React app to the **Amazon S3** bucket you deployed earlier. The front end web app will use a **CloudFront** distribution to serve up the **React** app.
+The front end web app will use a **CloudFront** distribution to serve up the **React** app. Build and deploy the front end React app to the **Amazon S3** bucket
 
 1. Build front end
-From the command line and within the webapp/ directory let's build our app and create a distribution directory by running the following:
+Run the command line in directory called `webapp/`
 
 ```shell
 npm run build
 ```
 
 2. Deploy to Amazon S3
-After building our web app, a new `webapp/dist` directory is created and the contents of this directory is what will be uploaded to the **Amazon S3** bucket and ultimately served from the **CloudFront** distribution. Within the `webapp/` directory you're going to upload the front end to the Amazon S3 bucket by running the below command:
+After building our web app, a new `webapp/dist` directory is created and the contents of this directory is what will be uploaded to the **Amazon S3** bucket. 
 
 ```shell
 npx s3-spa-upload dist <REPLACE-WITH-YOUR-S3-BUCKET-NAME>
