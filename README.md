@@ -378,9 +378,3 @@ Other noteworthy features:
   - The (plain) **Web client** implementation has no dependencies
   - The **React** Web client implementation only has a peer dependency on `react` itself
 - The **JWT Token** will use **Memory Storage** for storing the credential instead of traditional storage. This will resulting in more secure and phising-proof token.
-
-## References
-
-The reference for **BPT Passwordless Authentication Tech Demo** is from the following video:
-
-[![Solution Intro on YouTube](https://img.youtube.com/vi/hY54Zy-l6hc/0.jpg)](https://www.youtube.com/watch?v=hY54Zy-l6hc)
